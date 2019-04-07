@@ -1,0 +1,28 @@
+# Documentation: http://docs.travis-ci.com/user/languages/julia/
+language: julia
+sudo: required
+os:
+  - linux
+julia:
+  - 0.6
+  - nightly
+matrix:
+  - PYTHON=Conda-python
+matrix:
+  allow_failures:
+    - julia: nightly
+notifications:
+  email: false
+addons:
+      apt_packages:
+        - gfortran
+
+script:
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - export LD_LIBRARY_PATH=$HOME/.julia/v0.6/Conda/deps/usr/lib; LD_PRELOAD=${HOME}/.julia/v0.6/Conda/deps/usr/lib/libz.so
+  - julia -e 'Pkg.clone(pwd())'
+  - julia -e 'Pkg.test("PrettyPlots")'
+
+before_install:
+  - julia -e 'ENV["PYTHON"]=""; Pkg.add("Conda"); using Conda; Conda.update(); Conda.add("matplotlib"); Conda.add("basemap"); Pkg.add("PyCall"); Pkg.build("PyCall"); Pkg.add("PyPlot");'
+# https://github.com/Balinus/ClimateTools.jl/blob/master/.travis.yml
